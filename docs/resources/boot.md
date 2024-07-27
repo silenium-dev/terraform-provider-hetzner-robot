@@ -3,7 +3,7 @@
 page_title: "hetzner-robot_boot Resource - terraform-provider-hetzner-robot"
 subcategory: ""
 description: |-
-  
+
 ---
 
 # hetzner-robot_boot (Resource)
@@ -17,12 +17,11 @@ description: |-
 
 ### Required
 
-- `server_id` (Number) Server ID
+- `server_number` (Number) Server number
 
 ### Optional
 
 - `active_profile` (String) Active boot profile
-- `architecture` (String) Active Architecture
 - `authorized_keys` (List of String) One or more SSH key fingerprints
 - `language` (String) Language
 - `operating_system` (String) Active Operating System / Distribution
