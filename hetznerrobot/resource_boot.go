@@ -19,7 +19,7 @@ func resourceBoot() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"server_id": {
+			"server_number": {
 				Type:        schema.TypeInt,
 				Required:    true,
 				Description: "Server ID",
@@ -29,11 +29,6 @@ func resourceBoot() *schema.Resource {
 				Type:        schema.TypeString, // Enum should be better (linux/rescue/...)
 				Optional:    true,
 				Description: "Active boot profile",
-			},
-			"architecture": {
-				Type:        schema.TypeString, // Enum should be better (amd64/...)
-				Optional:    true,
-				Description: "Active Architecture",
 			},
 			"language": {
 				Type:        schema.TypeString, // Enum should be better (amd64/...)
@@ -77,24 +72,23 @@ func resourceBoot() *schema.Resource {
 func resourceBootImportState(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	c := meta.(HetznerRobotClient)
 
-	serverID, err := strconv.Atoi(d.Id())
+	serverNumber, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return nil, err
 	}
 
-	boot, err := c.getBoot(ctx, serverID)
+	boot, err := c.getBoot(ctx, serverNumber)
 	if err != nil {
 		return nil, err
 	}
 
 	d.Set("active_profile", boot.ActiveProfile)
-	d.Set("architecture", boot.Architecture)
 	d.Set("ipv4_address", boot.ServerIPv4)
 	d.Set("ipv6_network", boot.ServerIPv6)
 	d.Set("language", boot.Language)
 	d.Set("operating_system", boot.OperatingSystem)
 	d.Set("password", boot.Password)
-	d.Set("server_id", serverID)
+	d.Set("server_id", serverNumber)
 
 	results := make([]*schema.ResourceData, 1)
 	results[0] = d
@@ -104,9 +98,8 @@ func resourceBootImportState(ctx context.Context, d *schema.ResourceData, meta i
 func resourceBootCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(HetznerRobotClient)
 
-	serverID := d.Get("server_id").(int)
+	serverNumber := d.Get("server_number").(int)
 	activeBootProfile := d.Get("active_profile").(string)
-	arch := d.Get("architecture").(string)
 	os := d.Get("operating_system").(string)
 	lang := d.Get("language").(string)
 	authorizedKeys := make([]string, 0)
@@ -116,7 +109,7 @@ func resourceBootCreate(ctx context.Context, d *schema.ResourceData, meta interf
 		}
 	}
 
-	bootProfile, err := c.setBootProfile(ctx, serverID, activeBootProfile, arch, os, lang, authorizedKeys)
+	bootProfile, err := c.setBootProfile(ctx, serverNumber, activeBootProfile, os, lang, authorizedKeys)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -124,7 +117,7 @@ func resourceBootCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("ipv4_address", bootProfile.ServerIPv4)
 	d.Set("ipv6_network", bootProfile.ServerIPv6)
 	d.Set("password", bootProfile.Password)
-	d.SetId(strconv.Itoa(serverID))
+	d.SetId(serverNumber)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -135,14 +128,13 @@ func resourceBootCreate(ctx context.Context, d *schema.ResourceData, meta interf
 func resourceBootRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(HetznerRobotClient)
 
-	serverID := d.Get("server_id").(int)
-	boot, err := c.getBoot(ctx, serverID)
+	serverNumber := d.Get("server_number").(int)
+	boot, err := c.getBoot(ctx, serverNumber)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.Set("active_profile", boot.ActiveProfile)
-	d.Set("architecture", boot.Architecture)
 	d.Set("ipv4_address", boot.ServerIPv4)
 	d.Set("ipv6_network", boot.ServerIPv6)
 	d.Set("language", boot.Language)
@@ -158,9 +150,8 @@ func resourceBootRead(ctx context.Context, d *schema.ResourceData, meta interfac
 func resourceBootUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(HetznerRobotClient)
 
-	serverID := d.Get("server_id").(int)
+	serverNumber := d.Get("server_id").(int)
 	activeBootProfile := d.Get("active_profile").(string)
-	arch := d.Get("architecture").(string)
 	os := d.Get("operating_system").(string)
 	lang := d.Get("language").(string)
 	authorizedKeys := make([]string, 0)
@@ -170,7 +161,7 @@ func resourceBootUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 		}
 	}
 
-	bootProfile, err := c.setBootProfile(ctx, serverID, activeBootProfile, arch, os, lang, authorizedKeys)
+	bootProfile, err := c.setBootProfile(ctx, serverNumber, activeBootProfile, os, lang, authorizedKeys)
 	if err != nil {
 		return diag.FromErr(err)
 	}

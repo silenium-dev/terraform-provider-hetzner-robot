@@ -11,16 +11,16 @@ func dataBoot() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceBootRead,
 		Schema: map[string]*schema.Schema{
+			"server_number": {
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "Server number",
+			},
 			// read-only / computed
 			"active_profile": {
 				Type:        schema.TypeString, // Enum should be better (linux/rescue/...)
 				Computed:    true,
 				Description: "Active boot profile",
-			},
-			"architecture": {
-				Type:        schema.TypeString, // Enum should be better (amd64/...)
-				Computed:    true,
-				Description: "Active Architecture",
 			},
 			"ipv4_address": {
 				Type:        schema.TypeString,
@@ -58,20 +58,19 @@ func dataBoot() *schema.Resource {
 func dataSourceBootRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(HetznerRobotClient)
 
-	serverID := d.Get("server_id").(int)
-	boot, err := c.getBoot(ctx, serverID)
+	serverNumber := d.Get("server_number").(int)
+	boot, err := c.getBoot(ctx, serverNumber)
 	if err != nil {
-		return diag.Errorf("Unable to find Boot Profile for server ID %d:\n\t %q", serverID, err)
+		return diag.Errorf("Unable to find Boot Profile for server ID %d:\n\t %q", serverNumber, err)
 	}
 
 	d.Set("active_profile", boot.ActiveProfile)
-	d.Set("architecture", boot.Architecture)
 	d.Set("ipv4_address", boot.ServerIPv4)
 	d.Set("ipv6_network", boot.ServerIPv6)
 	d.Set("language", boot.Language)
 	d.Set("operating_system", boot.OperatingSystem)
 	d.Set("password", boot.Password)
-	d.SetId(strconv.Itoa(serverID))
+	d.SetId(serverNumber)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
