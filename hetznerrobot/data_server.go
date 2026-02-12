@@ -150,7 +150,7 @@ func dataSourceServerRead(ctx context.Context, d *schema.ResourceData, meta inte
 	d.Set("server_ip", server.ServerIP)
 	d.Set("server_ip_v6_net", server.ServerIPv6)
 	d.Set("server_name", server.ServerName)
-	d.Set("server_subnets", server.Subnets)
+	d.Set("subnet", server.Subnets)
 	d.Set("status", server.Status)
 	d.Set("traffic", server.Traffic)
 	d.SetId(strconv.Itoa(server.ServerNumber))
